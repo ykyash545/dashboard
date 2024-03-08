@@ -33,19 +33,27 @@ def main():
     uploaded_file = st.file_uploader("Upload Excel file", type=["xls", "xlsx"])
 
     if uploaded_file is not None:
-        df = pd.read_excel(uploaded_file)
+        # Use xlrd as an alternative to openpyxl
+        try:
+            df = pd.read_excel(uploaded_file)
+        except ImportError:
+            st.error("Please make sure xlrd library is installed. You can install it via pip: pip install xlrd")
+            return
 
         # Display data
         st.subheader("Data")
         st.write(df)
+
+        # Exclude 'Sr No' column
+        columns_for_plotting = [col for col in df.columns if col != 'Sr No']
 
         # Choose type of plot
         plot_type = st.selectbox("Select type of plot", ["Bar Graph", "Pie Chart", "Scatter Plot"])
 
         if plot_type in ["Bar Graph", "Pie Chart", "Scatter Plot"]:
             # Select columns for X and Y axes
-            x_column = st.selectbox("Select X-axis column", df.columns)
-            y_column = st.selectbox("Select Y-axis column", df.columns)
+            x_column = st.selectbox("Select X-axis column", columns_for_plotting)
+            y_column = st.selectbox("Select Y-axis column", columns_for_plotting)
 
             if plot_type == "Bar Graph":
                 plot_bar_graph(df, x_column, y_column)
